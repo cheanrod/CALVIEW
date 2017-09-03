@@ -1,4 +1,4 @@
-# $Id: 57_CALVIEW.pm 13497 2017-02-24 06:44:24Z chris1284 $
+# $Id: 57_CALVIEW.pm 14014 2017-04-17 15:02:28Z chris1284 $
 ############################
 #	CALVIEW
 #	needs a defined Device 57_Calendar
@@ -27,6 +27,7 @@ sub CALVIEW_Initialize($)
 						"maxreadings " .
 						"modes:next ".
 						"oldStyledReadings:1,0 " .
+						"sourcecolor " .
 						"yobfield:_location,_description,_summary " .
 						$readingFnAttributes; 
 }
@@ -98,18 +99,34 @@ sub CALVIEW_GetUpdate($){
 	$year += 1900; $mon += 1; 		
 	my $datenext = sprintf('%02d.%02d.%04d', $mday, $mon, $year);
 	my @termineNew;
+	my @tempstart;
+	my @bts;
+	my @tempend;
+	my $isostarttime;
+	my $isoendtime;
+	my ($D,$M,$Y);
+	my ($eD,$eM,$eY);
 	foreach my $item (@termine ){
-		my @tempstart=split(/\s+/,$item->[0]);
-		my @tempend=split(/\s+/,$item->[2]);	
-		my ($D,$M,$Y)=split(/\./,$tempstart[0]);
-		my ($eD,$eM,$eY)=split(/\./,$tempend[0]);
-		my @bts=str2time($M."/".$D."/".$Y." ".$tempstart[1]);
+		#start datum und zeit behandeln
+		if( defined($item->[0])&& length($item->[0]) > 0) { 	
+			@tempstart=split(/\s+/,$item->[0]);
+			($D,$M,$Y)=split(/\./,$tempstart[0]);
+			@bts=str2time($M."/".$D."/".$Y." ".$tempstart[1]);
+			$isostarttime = $Y."-".$M."-".$D."T".$tempstart[1];
+		}
+		else {$item->[0] = "no startdate"}
+		#end datum und zeit behandeln	
+		if( defined($item->[2])&& length($item->[2]) > 0) { 
+			@tempend=split(/\s+/,$item->[2]);	
+			($eD,$eM,$eY)=split(/\./,$tempend[0]);
+			$isoendtime = $eY."-".$eM."-".$eD."T".$tempend[1];
+		}
+		else {$item->[2] = "no enddate"}
 		#replace the "\," with ","
 		if(length($item->[1]) > 0){ $item->[1] =~ s/\\,/,/g; }
 		if( defined($item->[4]) && length($item->[4]) > 0){ $item->[4] =~ s/\\,/,/g; }
 		if( defined($item->[5]) && length($item->[5]) > 0){ $item->[5] =~ s/\\,/,/g; }
-		my $isostarttime = $Y."-".$M."-".$D."T".$tempstart[1];
-		my $isoendtime = $eY."-".$eM."-".$eD."T".$tempend[1];
+		#berechnen verbleibender tage bis zum termin
 		my $eventDate = fhemTimeLocal(0,0,0,$D,$M-1,$Y-1900);
 		my $daysleft = floor(($eventDate - time) / 60 / 60 / 24 + 1);
 		my $daysleft_long;
@@ -139,6 +156,8 @@ sub CALVIEW_GetUpdate($){
 	my $yobfield = AttrVal($name,"yobfield","_description");
 	my $filterSummary = AttrVal($name,"filterSummary",".*:.*");
 	my @arrFilters = split(',' , $filterSummary );
+	my $sourceColor = AttrVal($name,"sourcecolor","");
+	my @arrSourceColors = split(',' , $sourceColor );
 	
 	# sort the array by btimestamp
 	my @sdata = map  $_->[0], 
@@ -149,13 +168,21 @@ sub CALVIEW_GetUpdate($){
 		my $age = 0;
 		my @termyear;
 		my $validterm = 0;
+	
 		for my $termin (@sdata){
+			my $termcolor="white";
 			#if($termin->{summary} =~ /$filterSummary/ ){
 			foreach my $filter (@arrFilters){ 
 				my @arrFilter= split(':' , $filter); 
 				my $sourceFilter = $arrFilter[0]; 
 				my $summaryFilter = $arrFilter[1]; 
 				if( $termin->{source} =~ /$sourceFilter/i && $termin->{summary} =~ /$summaryFilter/i ){ $validterm =1;}
+			};
+			foreach my $color (@arrSourceColors){ 
+				my @arrSourceColor = split(':' , $color); 
+				my $sourceName = $arrSourceColor[0]; 
+				my $sourceColor = $arrSourceColor[1]; 
+				if( $termin->{source} =~ /$sourceName/i ){ $termcolor = $sourceColor;}
 			};
 			if ($validterm ==1){
 					#alter berechnen wenn attribut gesetzt ist. alter wird aus "jahr des termins" - "geburtsjahr aus location oder description" errechnet
@@ -176,6 +203,7 @@ sub CALVIEW_GetUpdate($){
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_daysleftLong", $termin->{daysleftLong});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_summary", $termin->{summary});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_source", $termin->{source});
+					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_sourcecolor", $termcolor);
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_location", $termin->{location});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_description", $termin->{description});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_edate", $termin->{edate});
@@ -191,6 +219,7 @@ sub CALVIEW_GetUpdate($){
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $counter)."_daysleftLong", $termin->{daysleftLong});						
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_summary", $termin->{summary}); 
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_source", $termin->{source}); 
+						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_sourcecolor", $termcolor); 
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_location", $termin->{location});
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_description", $termin->{description});
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_edate", $termin->{edate}); 
@@ -208,6 +237,7 @@ sub CALVIEW_GetUpdate($){
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_daysleftLong", $termin->{daysleftLong});
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_summary", $termin->{summary}); 
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_source", $termin->{source});
+						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_sourcecolor", $termcolor);
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_location", $termin->{location});
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_description", $termin->{description});
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_edate", $termin->{edate}); 
