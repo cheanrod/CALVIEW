@@ -23,11 +23,13 @@ sub CALVIEW_Initialize($)
 						"disable:0,1 " .
 						"do_not_notify:1,0 " .
 						"filterSummary:textField-long " .
+						"fulldaytext " .
 						"isbirthday:1,0 " .						
 						"maxreadings " .
 						"modes:next ".
 						"oldStyledReadings:1,0 " .
 						"sourcecolor " .
+						"timeshort:1,0 " .
 						"yobfield:_location,_description,_summary " .
 						$readingFnAttributes; 
 }
@@ -193,7 +195,18 @@ sub CALVIEW_GetUpdate($){
 						elsif($yobfield eq "_summary" && defined($termin->{summary}) && length($termin->{summary}) > 0 && $termin->{summary} =~ /(\d{4})/ ) { my ($byear) = $termin->{summary} =~ /(\d{4})/ ; $age = $termyear[2] -  $byear;}
 						else {$age = " "}
 					}
-
+					my $timeshort = "";
+					my $nD = $D + 1;
+					if( $eD eq $nD && $termin->{btime} eq $termin->{etime} ){ $timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
+					else { 
+						if(AttrVal($name,"timeshort","0") eq 0) {$timeshort = $termin->{btime}." - ".$termin->{etime}; }
+						elsif(AttrVal($name,"timeshort","0") eq 1) {
+							my $tmps = substr $termin->{btime},0,5 ;
+							my $tmpe = substr $termin->{etime},0,5 ;
+							$timeshort = $tmps." - ".$tmpe ; 
+						}
+					}
+					
 					#standard reading t_[3steliger counter] anlegen
 					if($isbday == 1 ){ readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_age", $age);}
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_bdate", $termin->{bdate});
@@ -209,6 +222,7 @@ sub CALVIEW_GetUpdate($){
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_edate", $termin->{edate});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_etime", $termin->{etime});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_mode", $termin->{mode}); 
+					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_timeshort", $timeshort );
 					#wenn termin heute today readings anlegen
 					if ($date eq $termin->{bdate} ){
 						if($isbday == 1 ){ readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_age", $age);}
@@ -225,6 +239,7 @@ sub CALVIEW_GetUpdate($){
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_edate", $termin->{edate}); 
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_etime", $termin->{etime}); 
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_mode", $termin->{mode});
+						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_timeshort", $timeshort );
 						$todaycounter ++;
 					}
 					#wenn termin morgen tomorrow readings anlegen
@@ -243,6 +258,7 @@ sub CALVIEW_GetUpdate($){
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_edate", $termin->{edate}); 
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_etime", $termin->{etime});
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_mode", $termin->{mode});
+						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_timeshort", $timeshort );
 						$tomorrowcounter++;
 					}			
 					last if ($counter++ == $max);
