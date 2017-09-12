@@ -28,7 +28,7 @@ sub CALVIEW_Initialize($)
 						"maxreadings " .
 						"modes:next ".
 						"oldStyledReadings:1,0 " .
-						"sourcecolor " .
+						"sourcecolor:textField-long " .
 						"timeshort:1,0 " .
 						"yobfield:_location,_description,_summary " .
 						$readingFnAttributes; 
@@ -149,7 +149,8 @@ sub CALVIEW_GetUpdate($){
 			etime => $tempend[1],
 			edatetimeiso => $isoendtime,
 			btimestamp => $bts[0],
-			mode => $item->[6]};	
+			mode => $item->[6],
+			wday => $wday};			
 	}
 	my $todaycounter = 1;
 	my $tomorrowcounter = 1;
@@ -223,6 +224,7 @@ sub CALVIEW_GetUpdate($){
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_etime", $termin->{etime});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_mode", $termin->{mode}); 
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_timeshort", $timeshort );
+					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_weekday", $termin->{wday} );
 					#wenn termin heute today readings anlegen
 					if ($date eq $termin->{bdate} ){
 						if($isbday == 1 ){ readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_age", $age);}
@@ -388,6 +390,9 @@ sub CALVIEW_Notify($$)
 		e.g.: 	filterSummary Kalender_Abfall:Leichtverpackungen,Kalender_Abfall:Bioabfall
 				filterSummary Kalender_Abfall:Leichtverpackungen,Kalender_Feiertage:.*,Kalender_Christian:.*,Kalender_Geburtstage:.*
 </li><br>
+<li>fulldaytext [text]<br>
+		this text will be displayed in _timeshort reading for fullday terms (default ganztägig)
+</li><br>
 <li>isbirthday<br>
         0 / not set - no age calculation (default)  <br>
 		1 - age calculation active. The module calculates the age with year given in description or location (see att yobfield).
@@ -401,6 +406,13 @@ sub CALVIEW_Notify($$)
 <li>oldStyledReadings<br>
 		0 the default style of readings <br>
 		1 readings look like "2015.06.21-00:00" with value "Start of Summer" 
+</li><br>
+<li>sourcecolor &lt;calendername&gt;:&lt;colorcode&gt;[,&lt;calendername&gt;:&lt;colorcode&gt;]<br>
+		here you can define the termcolor for terms from your calendars for the calview tabletui widget, several calendar:color pairs must be separated by comma
+</li><br>
+<li>timeshort<br>
+		0 time in _timeshort readings formated 00:00:00 <br>
+		1 time in _timeshort readings formated 00:00  
 </li><br>
 <li>yobfield<br>
 		_description  - (default) year of birth will be read from term description <br>
@@ -442,6 +454,9 @@ sub CALVIEW_Notify($$)
 				filterSummary Kalender_Abfall:Leichtverpackungen,Kalender_Feiertage:.*,Kalender_Christian:.*,Kalender_Geburtstage:.*
 																	
 </li><br>
+<li>fulldaytext [text]<br>
+		Dieser Text wird bei ganztägigen Terminen in _timeshort Readings genutzt (default ganztägig)
+</li><br>
 <li>isbirthday<br>
         0 / nicht gesetzt - keine Altersberechnung (Standard) <br>
 		1 - aktiviert die Altersberechnung im Modul. Das Alter wird aus der in der Terminbeschreibung (description) angegebenen Jahreszahl (Geburtsjahr) berechnet. (siehe Attribut yobfield)
@@ -455,6 +470,15 @@ sub CALVIEW_Notify($$)
 <li>oldStyledReadings<br> 
 		0 die Standarddarstellung für Readings <br>
 		1 aktiviert die Termindarstellung im "alten" Format "2015.06.21-00:00" mit Wert "Start of Summer"
+</li><br>
+<li>sourcecolor &lt;calendername&gt;:&lt;colorcode&gt;[,&lt;calendername&gt;:&lt;colorcode&gt;]<br>
+		Hier kann man die Farben für die einzelnen Calendar definieren die dann zb im Tabletui widget genutzt werden kann.
+		Die calendar:color Elemente sind durch Komma zu trennen.
+		So kann man zb die google-Kalender Farben auch in der TUI für eine gewohnte Anzeige nutzen.
+</li><br>
+<li>timeshort<br>
+		0 Zeit in _timeshort Readings im Format 00:00:00 - 00:00:00 <br>
+		1 Zeit in _timeshort Readings im Format 00:00 - 00:00
 </li><br>
 <li>yobfield<br>
 		_description  - (der Standard) Geburtsjahr wird aus der Terminbechreibung gelesen <br>
