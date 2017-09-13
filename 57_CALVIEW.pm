@@ -1,4 +1,4 @@
-# $Id: 57_CALVIEW.pm 14014 2017-04-17 15:02:28Z chris1284 $
+# $Id: 57_CALVIEW.pm 15056 2017-09-12 17:17:30Z chris1284 $
 ############################
 #	CALVIEW
 #	needs a defined Device 57_Calendar
@@ -197,8 +197,11 @@ sub CALVIEW_GetUpdate($){
 						else {$age = " "}
 					}
 					my $timeshort = "";
-					my $nD = $D + 1;
-					if( $eD eq $nD && $termin->{btime} eq $termin->{etime} ){ $timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
+					my($startday,$startmonth,$startyear)=split(/\./,$termin->{bdate});
+					my($endday,$endmonth,$endyear)=split(/\./,$termin->{edate});
+					my $nextday = $startday + 1;
+					Log3 $name , 5,  "CALVIEW $name - nextday = $nextday , endday = $endday , startday = $startday , btime ".$termin->{btime}." , etime ".$termin->{etime}."";
+					if( $endday eq $nextday && $termin->{btime} eq $termin->{etime} ){ $timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
 					else { 
 						if(AttrVal($name,"timeshort","0") eq 0) {$timeshort = $termin->{btime}." - ".$termin->{etime}; }
 						elsif(AttrVal($name,"timeshort","0") eq 1) {
