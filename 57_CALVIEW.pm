@@ -1,4 +1,4 @@
-# $Id: 57_CALVIEW.pm 15061 2017-09-13 20:05:11Z chris1284 $
+# $Id: 57_CALVIEW.pm 15191 2017-10-03 18:20:21Z chris1284 $
 ############################
 #	CALVIEW
 #	needs a defined Device 57_Calendar
@@ -10,6 +10,7 @@ use strict;
 use warnings;
 use POSIX;
 use Date::Parse;
+use Date::Calc qw(Day_of_Week);
 
 sub CALVIEW_Initialize($)
 {
@@ -108,6 +109,7 @@ sub CALVIEW_GetUpdate($){
 	my $isoendtime;
 	my ($D,$M,$Y);
 	my ($eD,$eM,$eY);
+	my @arrWeekday = ("Montag", "Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag");
 	foreach my $item (@termine ){
 		#start datum und zeit behandeln
 		if( defined($item->[0])&& length($item->[0]) > 0) { 	
@@ -132,6 +134,7 @@ sub CALVIEW_GetUpdate($){
 		my $eventDate = fhemTimeLocal(0,0,0,$D,$M-1,$Y-1900);
 		my $daysleft = floor(($eventDate - time) / 60 / 60 / 24 + 1);
 		my $daysleft_long;
+		my $weekday = Day_of_Week($Y, $M, $D);
 		if( $daysleft == 0){$daysleft_long = "heute";}
 		elsif( $daysleft == 1){$daysleft_long = "morgen";}
 		else{$daysleft_long = "in ".$daysleft." Tagen";}
@@ -150,7 +153,8 @@ sub CALVIEW_GetUpdate($){
 			edatetimeiso => $isoendtime,
 			btimestamp => $bts[0],
 			mode => $item->[6],
-			wday => $wday};			
+			weekday => $weekday,
+			weekdayname => $arrWeekday[$weekday]};
 	}
 	my $todaycounter = 1;
 	my $tomorrowcounter = 1;
@@ -228,7 +232,8 @@ sub CALVIEW_GetUpdate($){
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_etime", $termin->{etime});
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_mode", $termin->{mode}); 
 					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_timeshort", $timeshort );
-					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_weekday", $termin->{wday} );
+					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_weekday", $termin->{weekday} );
+					readingsBulkUpdate($hash, "t_".sprintf ('%03d', $counter)."_weekdayname", $termin->{weekdayname} );
 					#wenn termin heute today readings anlegen
 					if ($date eq $termin->{bdate} ){
 						if($isbday == 1 ){ readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_age", $age);}
