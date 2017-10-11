@@ -10,7 +10,7 @@ use strict;
 use warnings;
 use POSIX;
 use Date::Parse;
-use Date::Calc qw(Day_of_Week);
+#use Date::Calc qw(Day_of_Week);
 
 sub CALVIEW_Initialize($)
 {
@@ -109,7 +109,7 @@ sub CALVIEW_GetUpdate($){
 	my $isoendtime;
 	my ($D,$M,$Y);
 	my ($eD,$eM,$eY);
-	my @arrWeekday = ("Montag", "Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag");
+	my @arrWeekday = ("Sonntag","Montag", "Dienstag","Mittwoch","Donnerstag","Freitag","Samstag");
 	foreach my $item (@termine ){
 		#start datum und zeit behandeln
 		if( defined($item->[0])&& length($item->[0]) > 0) { 	
@@ -134,7 +134,8 @@ sub CALVIEW_GetUpdate($){
 		my $eventDate = fhemTimeLocal(0,0,0,$D,$M-1,$Y-1900);
 		my $daysleft = floor(($eventDate - time) / 60 / 60 / 24 + 1);
 		my $daysleft_long;
-		my $weekday = Day_of_Week($Y, $M, $D);
+		#my $weekday = Day_of_Week($Y, $M, $D);
+		my ($tsec,$tmin,$thour,$tmday,$tmon,$year,$weekday,$tyday,$tisdst) = localtime(time + (86400 * $daysleft));
 		if( $daysleft == 0){$daysleft_long = "heute";}
 		elsif( $daysleft == 1){$daysleft_long = "morgen";}
 		else{$daysleft_long = "in ".$daysleft." Tagen";}
