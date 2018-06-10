@@ -1,4 +1,4 @@
-# $Id: 57_CALVIEW.pm 16023 2018-051-30 07:00:47Z chris1284 $
+# $Id: 57_CALVIEW.pm 16821 2018-06-05 15:01:52Z chris1284 $
 ############################
 #	CALVIEW
 #	needs a defined Device 57_Calendar
@@ -330,11 +330,19 @@ sub getsummery($)
 	my ($hash) = @_;
 	my @terminliste ;
 	my $name = $hash->{NAME};
-	my @calendernamen = split( ",", $hash->{KALENDER}); 
+	my @calendernamen = split( ",", $hash->{KALENDER});
+	my $callParams = "format:custom='\$U|\$T1|\$T2|\$S|\$L|\$DS|\$CA'";
 	my $modi = $attr{$name}{modes};
 	my @modes = split(/,/,$modi);
+	if (defined($modes[0] && $modes[0] eq "next")) {
+		$callParams = $callParams." series:next";
+	}
+	my $maxreadings = $attr{$name}{maxreadings};
+	if (defined($maxreadings)) {
+		$callParams = $callParams." limit:count=$maxreadings";
+	}
 	foreach my $calendername (@calendernamen){
-			my $all = CallFn($calendername, "GetFn", $defs{$calendername},("-","events","format:custom='\$U|\$T1|\$T2|\$S|\$L|\$DS|\$CA'"));
+			my $all = CallFn($calendername, "GetFn", $defs{$calendername},("-","events",$callParams));
 			Log3 $name , 5,  "CALVIEW $name - All data: \n$all ...";
 			my @termine=split(/\n/,$all);
 			foreach my $line (@termine){
