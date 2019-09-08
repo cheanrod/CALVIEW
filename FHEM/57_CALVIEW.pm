@@ -1,4 +1,4 @@
-# $Id: 57_CALVIEW.pm 17605 2018-10-23 16:37:40Z chris1284 $
+# $Id$
 ############################
 #	CALVIEW
 #	needs a defined Device 57_Calendar
