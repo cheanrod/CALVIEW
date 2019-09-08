@@ -1,4 +1,4 @@
-# $Id: 57_CALVIEW.pm 17020 2018-07-23 05:35:40Z chris1284 $
+# $Id: 57_CALVIEW.pm 17605 2018-10-23 16:37:40Z chris1284 $
 ############################
 #	CALVIEW
 #	needs a defined Device 57_Calendar
@@ -223,7 +223,7 @@ sub CALVIEW_GetUpdate($){
 					$nextday = sprintf ('%02d', $nextday);
 					Log3 $name , 5,  "CALVIEW $name - nextday = $nextday , endday = $endday , startday = $startday , btime ".$termin->{btime}." , etime ".$termin->{etime}."";
 					#if( $endday eq $nextday && $termin->{btime} eq $termin->{etime} ){ $timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
-					if( $termin->{duration} == 86400 ){ $termin->{duration} = AttrVal($name,"fulldaytext","ganztägig"); }
+					if( $termin->{duration} == 86400 ){ $termin->{duration} = AttrVal($name,"fulldaytext","ganztägig");$timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
 					else { 
 						if(AttrVal($name,"timeshort","0") eq 0) {$timeshort = $termin->{btime}." - ".$termin->{etime}; }
 						elsif(AttrVal($name,"timeshort","0") eq 1) {
@@ -271,6 +271,8 @@ sub CALVIEW_GetUpdate($){
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_etime", $termin->{etime}); 
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_mode", $termin->{mode});
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_timeshort", $timeshort );
+						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_weekday", $termin->{weekday} );
+						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_weekdayname", $termin->{weekdayname} );
 						readingsBulkUpdate($hash, "today_".sprintf ('%03d', $todaycounter)."_duration", $termin->{duration});
 						$todaycounter ++;
 					}
@@ -292,6 +294,8 @@ sub CALVIEW_GetUpdate($){
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_etime", $termin->{etime});
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_mode", $termin->{mode});
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_timeshort", $timeshort );
+						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_weekday", $termin->{weekday} );
+						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_weekdayname", $termin->{weekdayname} );
 						readingsBulkUpdate($hash, "tomorrow_".sprintf ('%03d', $tomorrowcounter)."_duration", $termin->{duration});
 						$tomorrowcounter++;
 					}
@@ -396,7 +400,7 @@ sub CALVIEW_Notify($$)
 <a name="CALVIEW"></a>
 <h3>CALVIEW</h3>
 <ul>This module creates a device with deadlines based on calendar-devices of the 57_Calendar.pm module. You need to install the  perl-modul Date::Parse!</ul>
-<ul>Actually the module supports only the "get <> next" function of the CALENDAR-Modul.</ul>
+<ul>Please configure the attribut HideOlderThen in your CALENDAR-Device, that controls if old events from past are shown!</ul>
 <b>Define</b>
 <ul><code>define &lt;Name&gt; CALVIEW &lt;calendarname(s) separate with ','&gt; &lt;next&gt; &lt;updateintervall in sec (default 43200)&gt;</code></ul>
 <ul><code>define myView CALVIEW Googlecalendar next</code></ul>
@@ -465,7 +469,7 @@ sub CALVIEW_Notify($$)
 <a name="CALVIEW"></a>
 <h3>CALVIEW</h3>
 <ul>Dieses Modul erstellt ein Device welches als Readings Termine eines oder mehrere Kalender(s), basierend auf dem 57_Calendar.pm Modul, besitzt. Ihr müsst das Perl-Modul Date::Parse installieren!</ul>
-<ul>Aktuell wird nur die "get <> next" Funktion vom CALENDAR untertstützt.</ul>
+<ul>Bitte setzt das Attribut HideOlderThen in eurem CALENDAR_Device, da sonst auch vergangene Termine gezeigt werden.</ul>
 <b>Define</b>
 <ul><code>define &lt;Name&gt; CALVIEW &lt;Kalendername(n) getrennt durch ','&gt; &lt;next&gt; &lt;updateintervall in sek (default 43200)&gt;</code></ul>
 <ul><code>define myView CALVIEW Googlekalender next</code></ul>
