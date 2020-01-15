@@ -222,6 +222,7 @@ sub CALVIEW_GetUpdate($){
 					my $nextday = $startday + 1;
 					$nextday = sprintf ('%02d', $nextday);
 					Log3 $name , 5,  "CALVIEW $name - nextday = $nextday , endday = $endday , startday = $startday , btime ".$termin->{btime}." , etime ".$termin->{etime}."";
+					$termin->{duration} = 0 if ($termin->{duration} eq "");
 					#if( $endday eq $nextday && $termin->{btime} eq $termin->{etime} ){ $timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
 					if( $termin->{duration} == 86400 ){ $termin->{duration} = AttrVal($name,"fulldaytext","ganztägig");$timeshort = AttrVal($name,"fulldaytext","ganztägig"); }
 					else { 

@@ -1,1 +1,2 @@
+- 2020-01-15: Fix if duration is empty 
 - 2019-09-08: Added consideration of mode 'next' and evaluation of attribute maxreadings
